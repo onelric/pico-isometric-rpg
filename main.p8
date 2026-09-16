@@ -10,7 +10,7 @@ math={
 }
 
 function log(msg)
-	printh("LOG: "..tostr(msg),"logs/log",true)
+ printh("LOG: "..tostr(msg),"logs/log",true)
 end
 
 --[[const]] c_tile_width=32
