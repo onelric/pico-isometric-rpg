@@ -3,10 +3,10 @@ version 43
 __lua__
 
 math={
-    clamp=function(x,min,max) 
-        if x<min then return min end if x>max then return max end return x
-    end,
-    lerp=function(a,b,t) return a*(1-t)+b*t end,
+ clamp=function(x,min,max) 
+  if x<min then return min end if x>max then return max end return x
+ end,
+ lerp=function(a,b,t) return a*(1-t)+b*t end,
 }
 
 function log(msg)
@@ -21,58 +21,58 @@ end
 --[[const]] c_left,c_right,c_up,c_down,c_o,c_x=0,1,2,3,4,5
 
 local tile_entity_id={
-    none=0,
-    player=1,
-    chest=2,
-    enemy=3,
-    skull=4,
-    poision=5,
-    death=6,
-    evil=7,
+ none=0,
+ player=1,
+ chest=2,
+ enemy=3,
+ skull=4,
+ poision=5,
+ death=6,
+ evil=7,
 }
 
 local iso_tile={
-    x=0,lerp_x=0,
-    y=0,lerp_y=0,
-    width=c_tile_width,
-    height=c_tile_height,
-    entity_tag=tile_entity_id.none
+ x=0,lerp_x=0,
+ y=0,lerp_y=0,
+ width=c_tile_width,
+ height=c_tile_height,
+ entity_tag=tile_entity_id.none
 }
 
 function get_iso_offset(x,y)
-    local tile_offset_x,tile_offset_y=0.5,0.25
-    local ox,oy=x*tile_offset_x-y*tile_offset_x,x*tile_offset_y+y*tile_offset_y
-    return ox,oy
+ local tile_offset_x,tile_offset_y=0.5,0.25
+ local ox,oy=x*tile_offset_x-y*tile_offset_x,x*tile_offset_y+y*tile_offset_y
+ return ox,oy
 end
 
 function new_iso_tile(x,y,tag)
-    local o=o or {}
-    o.x,o.y,o.entity_tag=x or 0,y or 0,tag or tile_entity_id.none
-    o.lerp_x=o.x-128
-    o.lerp_y=o.y-128
-    return setmetatable(o, {__index=iso_tile})
+ local o=o or {}
+ o.x,o.y,o.entity_tag=x or 0,y or 0,tag or tile_entity_id.none
+ o.lerp_x=o.x-128
+ o.lerp_y=o.y-128
+ return setmetatable(o, {__index=iso_tile})
 end
 
 function iso_tile:render()
-    self.lerp_x=math.lerp(self.lerp_x,self.x,0.2)
-    self.lerp_y=math.lerp(self.lerp_y,self.y,0.2)
-    local x,y=get_iso_offset(self.lerp_x,self.lerp_y)
-    sspr(8,0,32,32,x,y)
+ self.lerp_x=math.lerp(self.lerp_x,self.x,0.2)
+ self.lerp_y=math.lerp(self.lerp_y,self.y,0.2)
+ local x,y=get_iso_offset(self.lerp_x,self.lerp_y)
+ sspr(8,0,32,32,x,y)
 end
 
 function sort_tiles_by_depth(tiles)
-    for i=2,#tiles do
-        local tile=tiles[i]
-        local tile_depth=tile.x+tile.y
-        local j=i-1
+ for i=2,#tiles do
+  local tile=tiles[i]
+  local tile_depth=tile.x+tile.y
+  local j=i-1
 
-        while j>=1 and tiles[j].x+tiles[j].y>tile_depth do
-            tiles[j+1]=tiles[j]
-            j-=1
-        end
+  while j>=1 and tiles[j].x+tiles[j].y>tile_depth do
+   tiles[j+1]=tiles[j]
+   j-=1
+  end
 
-        tiles[j+1]=tile
-    end
+  tiles[j+1]=tile
+ end
 end
 
 
@@ -86,260 +86,244 @@ local ui_btn={x=0,y=0,w=0,h=0,name=tile_entity_id.none,pressed=false,action=nil}
 local is_placing=false
 
 function new_ui_btn(func,name)
-    local o={}
-    o.name=name
-    o.action=func or function(o)log("you didn't give "..o.name.." button an action")end
-    return setmetatable(o,{__index=ui_btn})
+ local o={}
+ o.name=name
+ o.action=func or function(o)log("you didn't give "..o.name.." button an action")end
+ return setmetatable(o,{__index=ui_btn})
 end
 
 function ui_btn:update()
-    if self.pressed then self.action(self) end
+ if self.pressed then self.action(self) end
 end
 
 local select_ui={
-    options={},
-    selected_btn=0,
-    btns={
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.none),
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.player),
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.chest),
-        -- new_ui_btn(function(b)
-        --     log(b.name) 
-        -- end,tile_entity_id.enemy),
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.skull),
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.poision),
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.death),
-        -- new_ui_btn(function(b)
-        --     log(b.name)
-        -- end,tile_entity_id.evil),
-    }
+ options={},
+ selected_btn=0,
+ btns={
+  -- new_ui_btn(function(b)
+  --  what_ever_is_supposed_to_happen_when_you_press_the_button
+  -- end,tile_entity_id.whatever_id_you_want),
+ }
 }
 
 function select_ui:reset_btns()
-    for i=1,3,1 do
-        deli(self.btns,i)
-        add(self.btns,new_ui_btn(function(b)log(b.name)end,flr(rnd(7)+1)))
-    end
+ for i=1,3,1 do
+  deli(self.btns,i)
+  add(self.btns,new_ui_btn(function(b)log(b.name)end,flr(rnd(7)+1)))
+ end
 end
 
 function select_ui:get_selected()
-    return self.btns[self.selected_btn+1]
+ return self.btns[self.selected_btn+1]
 end
 
 function select_ui:update()
-    if     btnp(c_left) then self.selected_btn-=1
-    elseif btnp(c_right) then self.selected_btn+=1 end
-    self.selected_btn=self.selected_btn%#self.btns
+ if     btnp(c_left) then self.selected_btn-=1
+ elseif btnp(c_right) then self.selected_btn+=1 end
+ self.selected_btn=self.selected_btn%#self.btns
 
-    if btnp(c_x) then
-        self:get_selected().pressed=true
-        is_placing=true
-    end
+ if btnp(c_x) then
+  self:get_selected().pressed=true
+  is_placing=true
+ end
 
-    foreach(self.btns,function(b)
-        b:update()
-        b.pressed=false
-    end)
+ foreach(self.btns,function(b)
+  b:update()
+  b.pressed=false
+ end)
 end
 
 function select_ui:draw()
-    local xoffset=0
-    local ox=camera_loc.delay_x
-    local oy=camera_loc.delay_y
-    local ui_x,ui_y=-46+ox,46+oy
-    local ui_width,ui_height=ui_x+123,ui_y+30
-    rectfill(ui_x,ui_y,ui_width,ui_height,1)
-    for i,b in ipairs(self.btns) do
-        xoffset+=16
-        if self.selected_btn+1==i then
-            print(b.name,ui_x+xoffset,ui_y,8)
-        else
-            print(b.name,ui_x+xoffset,ui_y,7)
-        end
-    end
-    print("⬅️,➡️ and ❎ to choose\n   then ❎ to place",ui_x+16,ui_y+10,7)
+ local xoffset=0
+ local ox=camera_loc.delay_x
+ local oy=camera_loc.delay_y
+ local ui_x,ui_y=-46+ox,46+oy
+ local ui_width,ui_height=ui_x+123,ui_y+30
+ rectfill(ui_x,ui_y,ui_width,ui_height,1)
+ for i,b in ipairs(self.btns) do
+  xoffset+=16
+  if self.selected_btn+1==i then
+   print(b.name,ui_x+xoffset,ui_y,8)
+  else
+   print(b.name,ui_x+xoffset,ui_y,7)
+  end
+ end
+ print("⬅️,➡️ and ❎ to choose\n   then ❎ to place",ui_x+16,ui_y+10,7)
 end
 
 function tile_selection_logic()
-    select_ui:update()
+ select_ui:update()
 end
 
 function place_tile(tile_id)
-    for _, t in pairs(tiles) do
-        if t.x==pointer.x and t.y==pointer.y then return end
-    end
-    local new_tile=new_iso_tile(pointer.x,pointer.y,flr(tile_id)+1)
-    starting_tile=new_tile
-    add(tiles,new_tile)
-    sort_tiles_by_depth(tiles)
-    sfx(rnd(3))
-    camera_loc.shake=rnd(6)
-    select_ui:reset_btns()
-    is_placing=false
+ for _, t in pairs(tiles) do
+  if t.x==pointer.x and t.y==pointer.y then return end
+ end
+ local new_tile=new_iso_tile(pointer.x,pointer.y,flr(tile_id)+1)
+ starting_tile=new_tile
+ add(tiles,new_tile)
+ sort_tiles_by_depth(tiles)
+ sfx(rnd(3))
+ camera_loc.shake=rnd(6)
+ select_ui:reset_btns()
+ is_placing=false
 end
 
 function tile_placing_logic()
-    -- Pointer movement
-    if btn(c_left) then
-        pointer.x=starting_tile.x-c_tile_width
-        pointer.y=starting_tile.y
-    elseif btn(c_right) then 
-        pointer.x=starting_tile.x+c_tile_width
-        pointer.y=starting_tile.y
-    end
+ -- Pointer movement
+ if btn(c_left) then
+  pointer.x=starting_tile.x-c_tile_width
+  pointer.y=starting_tile.y
+ elseif btn(c_right) then 
+  pointer.x=starting_tile.x+c_tile_width
+  pointer.y=starting_tile.y
+ end
 
-    if btn(c_up) then 
-        pointer.y=starting_tile.y-c_tile_height
-        pointer.x=starting_tile.x
-    elseif btn(c_down) then 
-        pointer.y=starting_tile.y+c_tile_height
-        pointer.x=starting_tile.x
-    end
+ if btn(c_up) then 
+  pointer.y=starting_tile.y-c_tile_height
+  pointer.x=starting_tile.x
+ elseif btn(c_down) then 
+  pointer.y=starting_tile.y+c_tile_height
+  pointer.x=starting_tile.x
+ end
 
-    if btnp(c_x) then
-        place_tile(select_ui:get_selected().name-1)
-    end
+ if btnp(c_x) then
+  place_tile(select_ui:get_selected().name-1)
+ end
 end
 
 local cloud={}
 function spawn_cloud(x,y,s)
-    local o={}
-    o.x,o.y,o.s,o.l=x,y,s,0
-    -- TODO)) Figure out a more elegant way to do whatever the fuck this is
-    o.rand={
-        r1s=rnd(10),
-        r2x=rnd(10),
-        r2y=rnd(10),
-        r2s=rnd(10),
-        r3x=rnd(15),
-        r3y=rnd(12),
-        r3s=rnd(10)
-    }
-    return setmetatable(o,{__index=cloud})
+ local o={}
+ o.x,o.y,o.s,o.l=x,y,s,0
+ -- TODO)) Figure out a more elegant way to do whatever the fuck this is
+ o.rand={
+  r1s=rnd(10),
+  r2x=rnd(10),
+  r2y=rnd(10),
+  r2s=rnd(10),
+  r3x=rnd(15),
+  r3y=rnd(12),
+  r3s=rnd(10)
+ }
+ return setmetatable(o,{__index=cloud})
 end
+
 function cloud:update()
-    self.x+=0.3
-    self.y+=0.05
-    self.l+=1/30
+ self.x+=0.3
+ self.y+=0.05
+ self.l+=1/30
 end
 function cloud:draw()
-    circfill(self.x,self.y,self.s+self.rand.r1s,7)
-    circfill(self.x+self.rand.r2x,self.y+self.rand.r2y,self.s+self.rand.r2s,7)
-    circfill(self.x+self.rand.r3x,self.y+self.rand.r3y,self.s+self.rand.r3s,7)
+ circfill(self.x,self.y,self.s+self.rand.r1s,7)
+ circfill(self.x+self.rand.r2x,self.y+self.rand.r2y,self.s+self.rand.r2s,7)
+ circfill(self.x+self.rand.r3x,self.y+self.rand.r3y,self.s+self.rand.r3s,7)
 end
 
 local clouds={}
 local spawn_timer=4
 
 function _init()
-    log("Game initialized")
-    select_ui:reset_btns()
-    for _=1, 20, 1 do
-        add(clouds,spawn_cloud(-80+rnd(140),-80+rnd(140),5+rnd(10)))
-    end
+ log("Game initialized")
+ select_ui:reset_btns()
+ for _=1, 20, 1 do
+  add(clouds,spawn_cloud(-80+rnd(140),-80+rnd(140),5+rnd(10)))
+ end
 end
 
 -- TODO Hi
-function _update60()
-    pointer.lerp_x=math.lerp(pointer.lerp_x,pointer.x,0.2)
-    pointer.lerp_y=math.lerp(pointer.lerp_y,pointer.y,0.2)
-    pointer.blink_timer+=0.1
+function _update()
+ pointer.lerp_x=math.lerp(pointer.lerp_x,pointer.x,0.2)
+ pointer.lerp_y=math.lerp(pointer.lerp_y,pointer.y,0.2)
+ pointer.blink_timer+=0.1
 
-    if #tiles==0 then add(tiles,starting_tile) end
+ if #tiles==0 then add(tiles,starting_tile) end
 
-    --if btnp(c_o) then is_placing=not is_placing end
-    if is_placing then 
-        tile_placing_logic()
-    else 
-        tile_selection_logic()
-    end
+ --if btnp(c_o) then is_placing=not is_placing end
+ if is_placing then 
+  tile_placing_logic()
+ else 
+  tile_selection_logic()
+ end
 
-    camera_loc.x,camera_loc.y=get_iso_offset(starting_tile.x,starting_tile.y)
-    camera_loc.delay_x=math.lerp(camera_loc.delay_x,camera_loc.x,0.4)
-    camera_loc.delay_y=math.lerp(camera_loc.delay_y,camera_loc.y,0.4)
-    camera_loc.shake=math.lerp(camera_loc.shake, 0, 0.2)
+ camera_loc.x,camera_loc.y=get_iso_offset(starting_tile.x,starting_tile.y)
+ camera_loc.delay_x=math.lerp(camera_loc.delay_x,camera_loc.x,0.4)
+ camera_loc.delay_y=math.lerp(camera_loc.delay_y,camera_loc.y,0.4)
+ camera_loc.shake=math.lerp(camera_loc.shake, 0, 0.2)
+end
+
+function out_of_bounds(x,y,margin)
+ return x>=camera_loc.x+margin or 
+         x<=camera_loc.x-margin or 
+         y>=camera_loc.y+margin or 
+         y<=camera_loc.y-margin
 end
 
 function _draw()
-    cls(12)
-    spawn_timer+=10/30
-    if spawn_timer>=5 then
-        add(clouds,spawn_cloud(camera_loc.delay_x-c_window_width,camera_loc.delay_y-c_window_height+rnd(c_window_height*2),10))
-        spawn_timer=0
-    end
+ cls(12)
+ spawn_timer+=10/30
+ if spawn_timer>=5 then
+  add(clouds,spawn_cloud(camera_loc.delay_x-c_window_width,camera_loc.delay_y-c_window_height+rnd(c_window_height*2),10))
+  spawn_timer=0
+ end
 
-    foreach(clouds,function(c)
-        c:update()
-        c:draw()
-        if c.x>=camera_loc.delay_x+c_window_width then
-            del(clouds,c)
-        end  
-    end)
-    log(#tiles)
+ foreach(clouds,function(c)
+  if not out_of_bounds(c.x,c.y,100) then 
+   c:draw() 
+  end
+  c:update()
+  if c.x>=camera_loc.delay_x+c_window_width then
+   del(clouds,c)
+  end  
+ end)
+ log(#tiles)
 
-    -- Tile rendering
-    local outline_x,outline_y=get_iso_offset(pointer.lerp_x,pointer.lerp_y)
-    local timer=4
-    
-    starting_tile:render()
-    foreach(tiles,function(t)
-        local t_x,t_y=get_iso_offset(t.lerp_x,t.lerp_y-16)
-        local margin=90
-        local out_of_bounds=t_x>=camera_loc.x+margin or 
-              t_x<=camera_loc.x-margin or 
-              t_y>=camera_loc.y+margin or 
-              t_y<=camera_loc.y-margin
-        if not out_of_bounds then 
-            t:render()
-            
-            if (pointer.blink_timer%timer)<=timer/2 then 
-                sspr(8+32,0,32,32,outline_x,outline_y)
-            end
+ -- Tile rendering
+ local outline_x,outline_y=get_iso_offset(pointer.lerp_x,pointer.lerp_y)
+ local timer=4
+ 
+ starting_tile:render()
+ foreach(tiles,function(t)
+  local t_x,t_y=get_iso_offset(t.lerp_x,t.lerp_y-16)
+  if not out_of_bounds(t_x,t_y,90) then 
+   t:render()
+        
+   if (pointer.blink_timer%timer)<=timer/2 then 
+    sspr(8+32,0,32,32,outline_x,outline_y)
+   end
 
-            -- Rendering offsets for entities
-            if t.entity_tag==tile_entity_id.player then
-                sspr(72,16,16,16,t_x,t_y)
-            elseif t.entity_tag==tile_entity_id.chest then
-                sspr(72,0,16,16,t_x,t_y)
-            elseif t.entity_tag==tile_entity_id.skull then
-                sspr(72+16,0,16,16,t_x,t_y)
-            elseif t.entity_tag==tile_entity_id.death then
-                sspr(72+32,16,16,16,t_x,t_y)
-            elseif t.entity_tag==tile_entity_id.poision then
-                sspr(72+32,0,16,16,t_x,t_y)
-            elseif t.entity_tag==tile_entity_id.evil then
-                sspr(72+16,16,16,16,t_x,t_y)
-            elseif t.entity_tag==tile_entity_id.enemy then
-                pal(7,8)
-                pal(6,2)
-                pal(8,1)
-                sspr(72,16,16,16,t_x,t_y)
-                pal()
-            end
-        end
-    end)
+   -- Rendering offsets for entities
+   if t.entity_tag==tile_entity_id.player then
+    sspr(72,16,16,16,t_x,t_y)
+   elseif t.entity_tag==tile_entity_id.chest then
+    sspr(72,0,16,16,t_x,t_y)
+   elseif t.entity_tag==tile_entity_id.skull then
+    sspr(72+16,0,16,16,t_x,t_y)
+   elseif t.entity_tag==tile_entity_id.death then
+    sspr(72+32,16,16,16,t_x,t_y)
+   elseif t.entity_tag==tile_entity_id.poision then
+    sspr(72+32,0,16,16,t_x,t_y)
+   elseif t.entity_tag==tile_entity_id.evil then
+    sspr(72+16,16,16,16,t_x,t_y)
+   elseif t.entity_tag==tile_entity_id.enemy then
+    pal(7,8)
+    pal(6,2)
+    pal(8,1)
+    sspr(72,16,16,16,t_x,t_y)
+    pal()
+   end
+  end
+ end)
 
-    -- Pointer rendering
-    
-    -- Camera positioning
-    camera((camera_loc.delay_x-(c_window_width/2)+c_tile_width/2)+camera_loc.shake,
-           (camera_loc.delay_y-(c_window_height/2)+c_tile_height/2)-camera_loc.shake)
-    
-    
-    if is_placing then return end
-    select_ui:draw()
+ -- Pointer rendering
+ 
+ -- Camera positioning
+ camera((camera_loc.delay_x-(c_window_width/2)+c_tile_width/2)+camera_loc.shake,
+        (camera_loc.delay_y-(c_window_height/2)+c_tile_height/2)-camera_loc.shake)
+ 
+ 
+ if is_placing then return end
+ select_ui:draw()
 end
 __gfx__
 000000000000000000000b3333000000000000000000000000000077770000000000000000111100000000000000111111111000000000000000000000000000
